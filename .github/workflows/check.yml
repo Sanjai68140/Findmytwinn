@@ -1,4 +1,4 @@
-name: Check Birthday Finder Prototype
+name: Build Birthday Finder Devvit App
 
 on:
   push:
@@ -10,7 +10,7 @@ permissions:
   contents: read
 
 jobs:
-  verify:
+  build:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -19,10 +19,16 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '24'
-      - name: Validate birthday finder source
+      - name: Validate birthday dates
         run: node scripts/check-prototype.mjs
-      - name: Explain Devvit deployment status
-        run: |
-          echo "Prototype source checks passed."
-          echo "Devvit scaffold, build, Reddit credentials and deployment are NOT configured."
-          echo "This workflow does not deploy to Reddit."
+      - name: Install dependencies
+        run: npm install --no-audit --no-fund
+      - name: Build Devvit Web client
+        run: npm run build
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: findmytwinn-build
+          path: dist/
+      - name: Deployment note
+        run: echo "Build only. Reddit authentication, playtest, installation and launch are separate."
