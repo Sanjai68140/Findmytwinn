@@ -1,0 +1,28 @@
+name: Check Birthday Finder Prototype
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Set up Node.js 24
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Validate birthday finder source
+        run: node scripts/check-prototype.mjs
+      - name: Explain Devvit deployment status
+        run: |
+          echo "Prototype source checks passed."
+          echo "Devvit scaffold, build, Reddit credentials and deployment are NOT configured."
+          echo "This workflow does not deploy to Reddit."
