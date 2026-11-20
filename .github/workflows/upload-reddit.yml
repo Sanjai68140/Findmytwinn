@@ -1,0 +1,50 @@
+name: Upload Findmytwinn to Reddit (manual)
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: reddit-upload
+  cancel-in-progress: false
+
+jobs:
+  upload:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Verify Reddit credentials are configured
+        env:
+          DEVVIT_TOKEN: ${{ secrets.DEVVIT_TOKEN }}
+          DEVVIT_SESSION_ID: ${{ secrets.DEVVIT_SESSION_ID }}
+        run: |
+          if [ -z "$DEVVIT_TOKEN" ] || [ -z "$DEVVIT_SESSION_ID" ]; then
+            echo "::error::Add DEVVIT_TOKEN and DEVVIT_SESSION_ID in repository Settings > Secrets and variables > Actions before uploading."
+            exit 1
+          fi
+      - name: Install project dependencies and Devvit CLI
+        run: |
+          npm install --no-audit --no-fund
+          npm install --no-save --no-audit --no-fund devvit@latest
+      - name: Build app
+        run: npm run build
+      - name: Configure authenticated CLI session
+        env:
+          DEVVIT_TOKEN: ${{ secrets.DEVVIT_TOKEN }}
+          DEVVIT_SESSION_ID: ${{ secrets.DEVVIT_SESSION_ID }}
+        run: |
+          mkdir -p "$HOME/.devvit"
+          printf '%s' "$DEVVIT_TOKEN" > "$HOME/.devvit/token"
+          printf '%s' "$DEVVIT_SESSION_ID" > "$HOME/.devvit/session-id"
+          chmod 600 "$HOME/.devvit/token" "$HOME/.devvit/session-id"
+      - name: Check Reddit account
+        run: npx devvit whoami
+      - name: Upload private app version to Reddit
+        run: npx devvit upload
+      - name: Reminder
+        run: echo "Uploaded privately. This does not publish or install the app in r/findmytwinn."
