@@ -1,0 +1,15 @@
+import { readFileSync, existsSync } from 'node:fs';
+import assert from 'node:assert/strict';
+const component = 'src/client/BirthdayFinder.tsx';
+const css = 'src/client/birthday-finder.css';
+assert.ok(existsSync(component), 'BirthdayFinder.tsx missing');
+assert.ok(existsSync(css), 'birthday-finder.css missing');
+const src = readFileSync(component, 'utf8');
+assert.ok(src.includes('export default function BirthdayFinder'), 'BirthdayFinder component missing');
+assert.ok(src.includes('threadUrls'), 'Thread URL mapping missing');
+assert.ok(src.includes('DAYS = [31,29,31,30,31,30,31,31,30,31,30,31]'), 'Day/month configuration missing');
+const days = [31,29,31,30,31,30,31,31,30,31,30,31];
+assert.equal(days.reduce((a,b)=>a+b,0),366);
+assert.equal(new Set(days.flatMap((count,i)=>Array.from({length:count},(_,j)=>String(i+1).padStart(2,'0')+'-'+String(j+1).padStart(2,'0')))).size,366);
+console.log('Source files and 366 birthday date keys verified.');
+console.log('NOTE: This is a static prototype check, not a React build or Devvit deployment.');
